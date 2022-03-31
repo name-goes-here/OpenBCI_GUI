@@ -10,6 +10,8 @@
 ///////////////////////////////////////////////////
 
 import org.apache.commons.lang3.math.NumberUtils;
+//import java.util.concurrent.ScheduledThreadPoolExecutor;
+//import java.util.concurrent.TimeUnit;
 
 interface TimeSeriesAxisEnum {
     public int getIndex();
@@ -484,6 +486,9 @@ class ChannelBar {
 
     boolean drawVoltageValue;
 
+    boolean currentlyBlinking = false;
+    boolean blinkBuffer = false;
+
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
         
         cbCp5 = new ControlP5(ourApplet);
@@ -561,6 +566,34 @@ class ChannelBar {
         minimumChannelHeight = padding_4 + yAxisLabel_h*2;
     }
 
+    void blinkDetect(float value){
+        if(value > 13 && !currentlyBlinking){
+            println("\nValue: " + value);
+            BLINKED_HARD = true;
+            currentlyBlinking = true;
+            println(++blinkCount + " Hard Blink");
+        } else if(value > 10 && !currentlyBlinking){
+            println("\nValue: " + value);
+            /*blinkBuffer = true;
+            ScheduledThreadPoolExecutor exec = new ScheduledThreadPoolExecutor(1);
+            exec.schedule(new Runnable() {
+                    public void run() {
+                        blinkBuffer = false;
+                    }
+                }, 500, TimeUnit.MILLISECONDS);*/
+            println(++blinkCount + " Blink");
+            BLINKED = true;
+            currentlyBlinking = true;
+        } else if(value < 10 && currentlyBlinking){
+            currentlyBlinking = false;
+            BLINKED = false;
+            BLINKED_HARD = false;
+        } else {
+            BLINKED = false;
+            BLINKED_HARD = false;
+        }
+    }
+
     void update() {
 
         //Reusable variables
@@ -568,6 +601,9 @@ class ChannelBar {
 
         //update the voltage values
         val = dataProcessing.data_std_uV[channelIndex];
+        if(channelIndex == 2){
+            blinkDetect(val);
+        }
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
             voltageValue.setText(is_railed[channelIndex].notificationString + voltageValue.string);
@@ -626,6 +662,15 @@ class ChannelBar {
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
                 autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
                 autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
+                /*if(currentBoard.isStreaming() && channelIndex == 3 && i == dataProcessingFilteredBuffer[channelIndex].length - nPoints){
+                //if(currentBoard.isStreaming() && channelIndex == 3){
+                    if(!blinkBuffer){
+                        blinkDetect(filt_uV_value);
+                    } else {
+                        BLINKED = false;
+                    }
+                    //System.out.println("uv_val: " + filt_uV_value);
+                }*/
             }
             applyAutoscale();
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints

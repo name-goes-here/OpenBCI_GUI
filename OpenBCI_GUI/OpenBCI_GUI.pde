@@ -294,7 +294,7 @@ boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessin
 
 //========================SETUP============================//
 
-void settings() {
+void settings2() {
     //LINUX GFX FIX #816
     System.setProperty("jogl.disable.openglcore", "false");
 

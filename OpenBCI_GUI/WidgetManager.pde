@@ -25,6 +25,7 @@ W_playback w_playback;
 W_Spectrogram w_spectrogram;
 W_PacketLoss w_packetLoss;
 W_Focus w_focus;
+W_Music w_music;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -133,8 +134,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_template1.setTitle("Widget Template 1");
     addWidget(w_template1, w);
 
-    
-
+    //Widget 12
+    w_music = new W_Music(_this);
+    w_music.setTitle("Play Music");
+    addWidget(w_music, w);
 
 }
 

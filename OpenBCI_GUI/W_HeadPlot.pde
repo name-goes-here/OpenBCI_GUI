@@ -328,7 +328,7 @@ class HeadPlot {
                 headImage.set(Ix, Iy, color(0, 0, 0, 0));
             }
         }
-
+        /*
         //define the weighting factors to go from the electrode voltages
         //outward to the full the contour plot
         if (false) {
@@ -342,7 +342,7 @@ class HeadPlot {
             int n_wide_full = int(total_width);
             int n_tall_full = int(total_height);
             computePixelWeightingFactors_multiScale(n_wide_full, n_tall_full);
-        }
+        }*/
     } //end of method
 
 

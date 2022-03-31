@@ -18,6 +18,10 @@ final int ALPHA = 2; // 8-13 Hz
 final int BETA = 3; // 13-30 Hz
 final int GAMMA = 4; // 30-55 Hz
 
+boolean BLINKED = false;
+boolean BLINKED_HARD = false;
+int blinkCount = 0;
+
 float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
 
 //------------------------------------------------------------------------
@@ -103,6 +107,10 @@ class DataProcessing {
     float avgPowerInBins[][];
     float headWidePower[];
 
+    // float ch3_mean = 0;
+    // float ch4_mean = 0;
+    // boolean currentlyBlinking = false;
+
     DataProcessing(int NCHAN, float sample_rate_Hz) {
         nchan = NCHAN;
         fs_Hz = sample_rate_Hz;
@@ -141,12 +149,22 @@ class DataProcessing {
             double[] tempArray = floatToDoubleArray(data_forDisplay_uV[Ichan]);
             if (bsRange != BandStopRanges.None) {
                 DataFilter.perform_bandstop(tempArray, currentBoard.getSampleRate(), (double)bsRange.getFreq(), (double)4.0, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
+                //println("Bandstop: ");
+                //println("Center: " + (double)bsRange.getFreq() + ", Width: " + 4.0);
             }
             if (bpRange != BandPassRanges.None) {
                 double centerFreq = (bpRange.getStart() + bpRange.getStop()) / 2.0;
                 double bandWidth = bpRange.getStop() - bpRange.getStart();
+                //println("Bandpass: ");
+                //println("Center: " + centerFreq + ", Width: " + bandWidth + ", Start: " + bpRange.getStart() + ", Stop: " + bpRange.getStop());
                 DataFilter.perform_bandpass(tempArray, currentBoard.getSampleRate(), centerFreq, bandWidth, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
             }
+            /*
+Bandstop:
+Center: 60.0, Width: 4.0
+Bandpass:
+Center: 27.5, Width: 45.0, Start: 5.0, Stop: 50.0
+            */
             doubleToFloatArray(tempArray, data_forDisplay_uV[Ichan]);
         } catch (BrainFlowError e) {
             e.printStackTrace();
@@ -275,5 +293,59 @@ class DataProcessing {
                 polarity[Ichan]=-1.0;
             }
         }
+
+        // Check for blinking
+        //blink_detect(data_forDisplay_uV);
     }
+/*
+    public void blink_detect(float[][] data_newest_uV){
+        // float ch3_sum = 0;
+        // float ch4_sum = 0;
+
+        //if(((abs(data_newest_uV[2][0]) - ch3_mean) > 100) && (abs(data_newest_uV[2][0]) > 100) || ((abs(data_newest_uV[3][0]) - ch4_mean) > 100) && (abs(data_newest_uV[3][0]) > 100)){
+        //if(((abs(data_newest_uV[2][0]) - ch3_mean) > 10) && (abs(data_newest_uV[2][0]) > 10)){
+        if(data_newest_uV[2][0] > 10 && !currentlyBlinking){
+            println(++blinkCount + " Blink");
+            BLINKED = true;
+            currentlyBlinking = true;
+        } else if(data_newest_uV[2][0] < 0 && currentlyBlinking){
+            currentlyBlinking = false;
+            BLINKED = false;
+        } else {
+            BLINKED = false;
+        }
+        //if(data_newest_uV[2][0] > 0){
+        //println("Ch.3 newest: " + data_newest_uV[2][0]);}
+        // println("Ch.2 newest: " + abs(data_newest_uV[1][0]));
+        // println("---");
+        // for(int i = 0; i < data_newest_uV.length; i++){
+        //     ch3_sum += abs(data_newest_uV[2][i]);
+        //     ch4_sum += abs(data_newest_uV[3][i]);
+        // }
+        // ch3_mean = ch3_sum/4;
+        // ch4_mean = ch4_sum/4;
+    }*/
+
+    /*
+    public void blink_detect_fail(float[][] data_newest_uV){
+        float ch1_sum = 0;
+        float ch2_sum = 0;
+
+        if(((abs(data_newest_uV[0][0]) - ch1_mean) > 100) && (abs(data_newest_uV[0][0]) > 100) || ((abs(data_newest_uV[1][0]) - ch2_mean) > 100) && (abs(data_newest_uV[1][0]) > 100)){
+        //if(((abs(data_newest_uV[0][0]) - ch1_mean) > 100) && (abs(data_newest_uV[0][0]) > 100)){
+            println(++blinkCount + " Blink");
+            BLINKED = true;
+        } else {
+            BLINKED = false;
+        }
+        // println("Ch.1 newest: " + abs(data_newest_uV[0][0]));
+        // println("Ch.2 newest: " + abs(data_newest_uV[1][0]));
+        // println("---");
+        for(int i = 0; i < data_newest_uV.length; i++){
+            ch1_sum += abs(data_newest_uV[0][i]);
+            ch2_sum += abs(data_newest_uV[1][i]);
+        }
+        ch1_mean = ch1_sum/4;
+        ch2_mean = ch2_sum/4;
+    }*/
 }
